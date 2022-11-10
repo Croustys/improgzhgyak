@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #define ROW 6
 #define COL 7
@@ -31,22 +32,19 @@ void printTable()
 
 bool submit(int player, int col)
 {
-  if (table[0][col] == 0)
+  for (int i = ROW - 1; i >= 0; i--)
   {
-    printf("%s", "Nem legális lépés!");
-    return false;
-  }
-  for (int i = 0; i < ROW; ++i)
-  {
-    if (table[i][col] != 0)
+    if (table[i][col] == 0)
     {
-      table[i - 1][col] = player;
+      table[i][col] = player;
+      return true;
     }
   }
-  return true;
+
+  return false;
 }
 
-void evaluate()
+int evaluate()
 {
   bool playerWon = false;
   int playerNumber = 0;
@@ -63,8 +61,7 @@ void evaluate()
   }
   if (playerWon)
   {
-    printf("%d számú játékos nyert!\n", playerNumber);
-    return;
+    return playerNumber;
   }
   for (int i = 0; i < ROW - 2 && !playerWon; ++i)
   {
@@ -79,13 +76,43 @@ void evaluate()
   }
   if (playerWon)
   {
-    printf("%d számú játékos nyert!\n", playerNumber);
+    return playerNumber;
   }
+  return 0;
+}
+
+void game(char *ch)
+{
+  const int charCodeToCol = 65;
+  size_t i = 0;
+
+  while (i < strlen(ch))
+  {
+    int player = i > 1 ? (i % 2) + 1 : i == 0 ? 1
+                                              : 2;
+    if (!submit(player, ch[i] - charCodeToCol))
+    {
+      printf("%s\n", "Nem legális lépés!");
+      printTable();
+    }
+    int playerNumber = evaluate();
+    if (playerNumber != 0)
+    {
+      printf("%d számú játékos nyert!\n", playerNumber);
+      return;
+    }
+    i++;
+  }
+  if (evaluate() == 0)
+    printf("Döntetlen!\n");
 }
 
 int main()
 {
   init();
-  evaluate();
+  char input[100];
+  scanf("%s", input);
+  game(input);
+
   return 0;
 }
