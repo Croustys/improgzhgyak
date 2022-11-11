@@ -6,7 +6,7 @@ float netto_menu_arak[5] = {40.5f, 30.15f, 55.3f, 24.65f, 29.43f};
 
 int dailyDiscountMenu()
 {
-  return 1 + rand() / ((RAND_MAX + 1u) / 5);
+  return (rand() % (5 - 1)) + 1;
 }
 
 float modifiedPrice(int index, float q)
@@ -16,7 +16,7 @@ float modifiedPrice(int index, float q)
 
 int generateReview()
 {
-  return 1 + rand() / ((RAND_MAX + 1u) / 10);
+  return (rand() % (10 - 1)) + 1;
 }
 
 void printMenuData(int index)
@@ -27,13 +27,24 @@ void printMenuData(int index)
   printf("Customer review: %d\n", generateReview());
 }
 
+void printDailyData(float data[], int length)
+{
+  float avgRating = data[2];
+  printf("Number of daily orders: %d\n", length);
+  printf("Daily net income: %.2f\n", data[0]);
+  printf("Daily gross income: %.2f\n", data[1]);
+  printf("Daily average review: %.2f\n", avgRating);
+  printf("%s\n", avgRating < 3.5 ? "The restaurant did poorly today." : avgRating < 6.5 ? "The restaurant did fine today."
+                                                                                        : "The restaurant did great today.");
+}
+
 void dailyIncome(int dailyOrders[], int length)
 {
   int discountedOrderNumber = dailyDiscountMenu() - 1;
   modifiedPrice(discountedOrderNumber, 0.8);
   printf("Napi kedvezményes menü: %d\n", discountedOrderNumber + 1);
 
-  float sum = 0;
+  float data[3];
   for (int i = 0; i < length; ++i)
   {
     if (dailyOrders[i] > 5)
@@ -42,29 +53,21 @@ void dailyIncome(int dailyOrders[], int length)
       continue;
     }
     printMenuData(dailyOrders[i]);
-    sum += modifiedPrice(dailyOrders[i] - 1, 1.27);
+    data[0] += netto_menu_arak[dailyOrders[i] - 1];
+    data[1] += modifiedPrice(dailyOrders[i] - 1, 1.27);
+    data[2] += generateReview();
   }
-  printf("Összesen: %2.f\n", sum);
-}
-
-void printDailyData(int orders[], int length)
-{
-  printf("Number of daily orders: %d\n", length);
-  printf("Daily net income: %.2f\n", 0);
-  printf("Daily gross income: %.2f\n", 0);
-  printf("Daily average review: %.2f\n", 0);
-  printf("%s\n", 0 < 3.5 ? "The restaurant did poorly today." : 0 < 6.5 ? "The restaurant did fine today."
-                                                                        : "The restaurant did great today.");
+  data[2] /= length;
+  printDailyData(data, length);
 }
 
 int main()
 {
   srand(time(NULL));
-  int rendelesek[] = {4, 3, 3, 3, 2, 1, 5, 6, 3};
+  int rendelesek[] = {1, 3, 4, 2, 2, 1, 5, 4, 4, 3, 5};
   size_t rendelesek_length = sizeof(rendelesek) / sizeof(int);
 
   dailyIncome(rendelesek, rendelesek_length);
-  printDailyData(rendelesek, rendelesek_length);
 
   return 0;
 }
